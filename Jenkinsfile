@@ -25,8 +25,11 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 // Ensure pytest is installed in the build environment.  The
-                // --no-cache-dir flag reduces the size of the download cache.
-                sh 'pip install --no-cache-dir pytest'
+                // --break-system-packages flag allows installation in the
+                // system Python when the environment is marked as externally
+                // managed (PEP 668).  Without this flag pip would refuse
+                // to install packages globally.
+                sh 'pip install --break-system-packages --no-cache-dir pytest'
             }
         }
 

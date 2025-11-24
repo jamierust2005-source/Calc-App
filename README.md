@@ -69,13 +69,14 @@ to a GitHub repository via a webhook.
 
 ## What the Pipeline Does
 
-When a commit is pushed to the repository, Jenkins will run the pipeline defined in `Jenkinsfile`:
+When a commit is pushed to the repository, Jenkins runs the declarative pipeline defined in `Jenkinsfile`.  The custom Jenkins image includes Python, pip and the Docker CLI, so the build runs directly on the Jenkins controller without needing a separate container.  The stages are:
 
 1. **Checkout** – Jenkins checks out the latest code from your GitHub repository (`checkout scm`).
-2. **Run calculator** – The pipeline uses a Python 3.11 container as the agent to execute several example invocations of `calculator.py` using the `sh` step.  Running Python scripts in Jenkins simply requires calling the `python` interpreter in an `sh` step; Digital.ai’s Jenkins documentation notes that you can add an “Execute Shell” build step that runs a command like `python -m unittest …`【268160408836039†L88-L100】, and the same principle applies here.
-3. **Build Docker image** – In the final stage, the pipeline calls `docker.build("calculator-app:${env.BUILD_NUMBER}")`.  The Docker Pipeline plugin’s `build()` method constructs a new image from the `Dockerfile` in the repository and returns an image object【713532891104427†L470-L516】.  You can push the image to a registry (e.g. Docker Hub) by calling `img.push()` on it.  To do so, configure credentials and call `docker.withRegistry(...) { img.push('latest') }` as shown in the Jenkins documentation【713532891104427†L594-L626】.
+2. **Install dependencies** – The pipeline executes `pip install --break-system-packages pytest` to install the `pytest` framework.  The `--break-system-packages` flag allows installation in Debian’s externally‑managed Python environment (PEP 668).
+3. **Run tests** – Pytest is invoked via `pytest -v` to run all tests in `test_calculator.py`.  If any test fails, the build stops.  Running Python commands in Jenkins is simply a matter of invoking the interpreter in a shell step【268160408836039†L88-L100】.
+4. **Build Docker image** – Finally, the pipeline builds a Docker image from the repository’s `Dockerfile` using the command `docker build -t calculator-app:${env.BUILD_NUMBER} .`.  Because the Jenkins container has the Docker CLI installed and mounts the host’s Docker socket, it can build images directly.  If you prefer to use the Docker Pipeline plugin instead of the CLI, you can call `docker.build()` and `push()` as described in the Jenkins documentation【713532891104427†L470-L516】.
 
-The pipeline concludes by printing a success or failure message.  If successful, you will see the new image tagged with the Jenkins build number when you run `docker images` on the host.
+After a successful build, you will see the new image tagged with the Jenkins build number when you run `docker images` on the host.
 
 ## Notes
 
