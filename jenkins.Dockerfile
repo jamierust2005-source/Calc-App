@@ -13,7 +13,7 @@ USER root
 
 # Install Python 3 and pip.  The base image is Debian-based so we can use apt-get.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-pip \
+    && apt-get install -y --no-install-recommends python3 python3-pip docker.io \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

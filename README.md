@@ -15,7 +15,7 @@ to a GitHub repository via a webhook.
 |---------------------------|---------------------------------------------------------------|
 | `calculator.py`           | A command‑line calculator that supports add/subtract/multiply/divide operations. |
 | `Dockerfile`              | Defines a minimal image based on `python:3.11-slim` that runs the calculator script. |
-| `Jenkinsfile`             | Declarative pipeline that installs dependencies, runs unit tests with `pytest`, and builds a Docker image using the Docker Pipeline plugin. |
+| `Jenkinsfile`             | Declarative pipeline that installs dependencies, runs unit tests with `pytest`, and builds a Docker image using the Docker CLI. |
 | `test_calculator.py`      | Pytest unit tests that verify the behavior of the calculator functions. |
 | `docker-compose.yml`      | Builds and starts a custom Jenkins controller with the Pipeline, GitHub and Docker plugins already installed, and mounts the host’s Docker socket so that the pipeline can build images. |
 | `jenkins.Dockerfile`      | Custom Dockerfile that extends `jenkins/jenkins:lts`, installs Python and pip, and preinstalls the Pipeline, Docker and GitHub plugins using `jenkins-plugin-cli`. |
@@ -51,7 +51,7 @@ to a GitHub repository via a webhook.
    docker exec -it jenkins-calculator cat /var/jenkins_home/secrets/initialAdminPassword
    ```
 
-4. Log in using that password.  Because the custom image pre‑installs the required plugins (`workflow‑aggregator`, `docker‑workflow` and `github`), the **Pipeline** job type will be available immediately under **New Item**.  You may still wish to install any additional suggested plugins, but the essentials are already present.
+4. Log in using that password.  Because the custom image pre‑installs the required plugins (`workflow‑aggregator`, `docker‑workflow` and `github`), the **Pipeline** job type will be available immediately under **New Item**.  You may still wish to install any additional suggested plugins, but the essentials are already present.  The Docker CLI is also installed inside the Jenkins container so that the pipeline can build images without additional tools.
 
 ## Creating the Pipeline Job
 

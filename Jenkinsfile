@@ -8,15 +8,11 @@
 // `docker.build` syntax to work.
 
 pipeline {
-    // Use a Docker container with Python installed as the build agent.
-    // Mount the host's Docker socket so that Docker commands executed in
-    // the pipeline can communicate with the Docker daemon on the host.
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u 0:0 -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    // Use any available agent (the Jenkins controller) for this build.  The
+    // custom Jenkins image includes Python, pip and the docker CLI, so we can
+    // run Python commands and build Docker images without needing a nested
+    // Docker agent.
+    agent any
 
     stages {
         stage('Checkout') {
@@ -29,8 +25,7 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 // Ensure pytest is installed in the build environment.  The
-                // --no-cache-dir flag reduces the size of the layer and avoids
-                // caching wheels between runs.
+                // --no-cache-dir flag reduces the size of the download cache.
                 sh 'pip install --no-cache-dir pytest'
             }
         }
@@ -46,16 +41,12 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Build a Docker image using the Dockerfile in the
-                    // repository.  The resulting image will be tagged with
-                    // the Jenkins build number.  The built image can be
-                    // pushed to a registry if desired by calling `push()`.
-                    def img = docker.build("calculator-app:${env.BUILD_NUMBER}")
-                    echo "Built Docker image ${img.id}"
-                    // Optionally push the image to a registry:
-                    // img.push('latest')
-                }
+                // Build a Docker image using the Dockerfile in the repository.
+                // Tag the image with the Jenkins build number.  Because the
+                // Jenkins container includes the docker CLI and mounts the
+                // host’s Docker socket, this command can talk to the host
+                // Docker daemon directly.
+                sh "docker build -t calculator-app:${env.BUILD_NUMBER} ."
             }
         }
     }

@@ -39,7 +39,6 @@ def divide(a: float, b: float) -> float:
         return None
     return a / b
 
-#test
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Simple command‑line calculator")
