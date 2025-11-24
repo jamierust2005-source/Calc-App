@@ -48,8 +48,9 @@ pipeline {
                 // Tag the image with the Jenkins build number.  Because the
                 // Jenkins container includes the docker CLI and mounts the
                 // host’s Docker socket, this command can talk to the host
-                // Docker daemon directly.
-                sh "docker build -t calculator-app:${env.BUILD_NUMBER} ."
+                // Docker daemon directly.  Specify the full path to the
+                // Docker binary to avoid PATH issues.
+                sh "/usr/bin/docker build -t calculator-app:${env.BUILD_NUMBER} ."
             }
         }
     }
