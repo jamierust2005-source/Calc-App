@@ -1,30 +1,46 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any   // IMPORTANT: no docker {} here
 
     stages {
-        stage('Install deps') {
+        stage('Show environment') {
             steps {
                 sh '''
-                  python --version
-                  pip install --break-system-packages pytest
+                  echo "PATH = $PATH"
+                  which python3 || echo "python3 not found"
+                  which docker || echo "docker not found"
+                '''
+            }
+        }
+
+        stage('Set up venv & install pytest') {
+            steps {
+                sh '''
+                  set -e
+                  python3 -m venv venv
+                  . venv/bin/activate
+                  pip install --upgrade pip
+                  pip install pytest
                 '''
             }
         }
 
         stage('Run tests') {
             steps {
-                sh 'pytest -q'
+                sh '''
+                  set -e
+                  . venv/bin/activate
+                  pytest -q
+                '''
             }
         }
 
         stage('Build Docker image') {
             steps {
-                sh "docker build -t calc:${env.BUILD_NUMBER} ."
+                sh '''
+                  set -e
+                  docker --version
+                  docker build -t calc:${BUILD_NUMBER} .
+                '''
             }
         }
     }
