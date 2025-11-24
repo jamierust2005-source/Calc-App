@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: jenkins.Dockerfile
+    user: root
+    container_name: jenkins-calculator
+    ports:
+      - "8080:8080"      # Jenkins web interface
+      - "50000:50000"    # Agent communication port
+    volumes:
+      # Persist Jenkins state and job configurations between restarts
+      - jenkins_home:/var/jenkins_home
+      # Share the host's Docker socket so that build steps can
+      # communicate with the Docker daemon.  The agent container will
+      # also mount this socket through the pipeline 'args' option.
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Disable the setup wizard so that Jenkins starts with a default
+      # configuration.  This makes it easier to automate plugin
+      # installation using the Jenkins CLI later.
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+
+volumes:
+  jenkins_home:
+    driver: local
