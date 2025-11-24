@@ -50,7 +50,7 @@ pipeline {
                 // host’s Docker socket, this command can talk to the host
                 // Docker daemon directly.  Specify the full path to the
                 // Docker binary to avoid PATH issues.
-                sh "/usr/bin/docker build -t calculator-app:${env.BUILD_NUMBER} ."
+                sh "docker -H tcp://dind:2375 build -t calc:${env.BUILD_NUMBER} ."
             }
         }
     }

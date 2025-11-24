@@ -1,11 +1,3 @@
-"""Pytest unit tests for the calculator module.
-
-These tests exercise the four arithmetic functions exposed by
-calculator.py.  To execute them locally, run ``pytest`` from the
-repository root.  The Jenkins pipeline will run these tests as part
-of the build.
-"""
-
 import pytest
 
 from calculator import add, subtract, multiply, divide
