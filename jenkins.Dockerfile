@@ -17,6 +17,16 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a docker group (matching typical host group) and add the Jenkins user to
+# it so that the Jenkins process can communicate with the Docker daemon via
+# /var/run/docker.sock.  Also ensure that the `docker` command points to
+# `docker.io` if the Debian package installs the binary with a suffix.  The
+# symbolic link is created only if it doesn't already exist.
+RUN set -eux; \
+    if ! getent group docker; then groupadd --gid 994 docker; fi; \
+    usermod -aG docker jenkins; \
+    if [ -f /usr/bin/docker.io ] && [ ! -f /usr/bin/docker ]; then ln -s /usr/bin/docker.io /usr/bin/docker; fi
+
 # Install Jenkins plugins.  The jenkins-plugin-cli is available in the base
 # image and will install dependencies automatically.  See Jenkins docs for
 # details on plugin installation.
